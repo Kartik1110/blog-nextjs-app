@@ -1,11 +1,11 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { POSTS } from "@/constants";
 import { IPost } from "@/interfaces";
+import prisma from "../../../../lib/prisma";
 
-function getPosts(req: NextApiRequest, res: NextApiResponse<IPost[] | { error: string }>) {
+async function getPosts(req: NextApiRequest, res: NextApiResponse<IPost[] | { error: string }>) {
   try {
-    res.status(200).json(POSTS);
+    const posts = await prisma.post.findMany();
+    res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error!" });
   }
@@ -14,9 +14,9 @@ function getPosts(req: NextApiRequest, res: NextApiResponse<IPost[] | { error: s
 function createPost(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { author, title, content } = req.body;
-    POSTS.push({ id: POSTS.length + 1, author, title, content });
+    const newPost = prisma.post.create({ data: { author, title, content } });
 
-    res.status(201).send(POSTS);
+    res.status(201).send(newPost);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error!" });
   }
